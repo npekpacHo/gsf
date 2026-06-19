@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           GSF (ИПИГ) - Иконки для писем в Gmail
 // @namespace      https://github.com/npekpacHo/gsf
-// @version        1.80
+// @version        1.81
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
 // @author         westakof, npekpacHo
 // @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
@@ -181,12 +181,10 @@
         overflow: visible !important;
       }
 
-      .${BADGE_CLASS}[data-gsf-kind="person"] {
-        width: 25px !important;
-      }
-
+      .${BADGE_CLASS}[data-gsf-kind="person"],
       .${BADGE_CLASS}[data-gsf-kind="org"] {
         width: 18px !important;
+        min-width: 18px !important;
         overflow: hidden !important;
       }
 
@@ -201,20 +199,20 @@
       .${OVERLAY_CLASS} {
         position: absolute !important;
         right: 0 !important;
-        bottom: -2px !important;
+        bottom: 0 !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        width: 14px !important;
-        height: 14px !important;
+        width: 12px !important;
+        height: 12px !important;
         border-radius: 999px !important;
         color: #fff !important;
         font-weight: 800 !important;
-        font-size: 9px !important;
-        line-height: 14px !important;
+        font-size: 8px !important;
+        line-height: 12px !important;
         text-align: center !important;
-        text-shadow: 0 1px 2px rgba(0,0,0,.55) !important;
-        box-shadow: 0 0 0 1px rgba(255,255,255,.95), 0 1px 3px rgba(0,0,0,.35) !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,.65) !important;
+        box-shadow: 0 0 0 1px rgba(255,255,255,.95), 0 1px 2px rgba(0,0,0,.35) !important;
       }
     `;
 
@@ -439,7 +437,7 @@
 
   function setBaseFallback(badge, model) {
     const letter = model.baseLetter || '?';
-    const size = model.kind === 'person' ? '25px' : '18px';
+    const size = '18px';
 
     badge.textContent = letter;
 
@@ -464,7 +462,7 @@
       userSelect: 'none',
       pointerEvents: 'none',
       verticalAlign: 'middle',
-      overflow: model.kind === 'person' ? 'visible' : 'hidden'
+      overflow: 'hidden'
     });
 
     if (model.kind === 'person') {
@@ -480,21 +478,21 @@
     Object.assign(overlay.style, {
       position: 'absolute',
       right: '0',
-      bottom: '-2px',
+      bottom: '0',
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
-      width: '14px',
-      height: '14px',
+      width: '12px',
+      height: '12px',
       borderRadius: '999px',
       color: '#fff',
       fontWeight: '800',
-      fontSize: '9px',
-      lineHeight: '14px',
+      fontSize: '8px',
+      lineHeight: '12px',
       textAlign: 'center',
-      textShadow: '0 1px 2px rgba(0,0,0,.55)',
+      textShadow: '0 1px 2px rgba(0,0,0,.65)',
       backgroundColor: stableColor(seed || letter),
-      boxShadow: '0 0 0 1px rgba(255,255,255,.95), 0 1px 3px rgba(0,0,0,.35)'
+      boxShadow: '0 0 0 1px rgba(255,255,255,.95), 0 1px 2px rgba(0,0,0,.35)'
     });
 
     return overlay;
