@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           GSF (ИПИГ) - Иконки для писем в Gmail
 // @namespace      https://github.com/npekpacHo/gsf
-// @version        1.60
+// @version        1.70
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
 // @author         westakof, npekpacHo
 // @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
@@ -21,7 +21,6 @@
   const SCRIPT_ID = 'gsf';
   const STYLE_ID = `${SCRIPT_ID}-style`;
   const BADGE_CLASS = `${SCRIPT_ID}-badge`;
-  const LETTER_CLASS = `${SCRIPT_ID}-letter`;
 
   const GSF_BASE = 'https://npekpacho.github.io/gsf';
   const ICON_BASE = `${GSF_BASE}/icons`;
@@ -29,24 +28,18 @@
   const SCAN_INTERVAL_MS = 3000;
   const DEBOUNCE_MS = 120;
 
-  // Главная идея:
-  // 1. Сначала берём favicon сайта.
-  // 2. Потом пробуем DuckDuckGo.
-  // 3. Только потом свои иконки с GitHub Pages.
-  // 4. Если всё плохо, показываем цветную букву.
   const USE_GOOGLE_FAVICONS = true;
   const USE_DUCKDUCKGO_FAVICONS = true;
   const USE_CUSTOM_ICONS = true;
 
-  // Некоторые домены можно принудительно вести на свою иконку первой.
-  // Это нужно, если Google/DDG стабильно возвращают мусор или не тот бренд.
+  // Если внешний favicon-сервис стабильно возвращает мусор для конкретного домена,
+  // можно добавить домен сюда. Тогда ручная иконка из /icons пойдёт первой.
   const CUSTOM_ICON_FIRST_DOMAINS = new Set([
     // 'platformaofd.ru',
     // 'cloudpayments.ru'
   ]);
 
-  // Исправление доменов.
-  // Слева: домен отправителя или его часть.
+  // Исправления доменов. Слева: домен отправителя или его часть.
   // Справа: домен сайта, favicon которого надо показывать.
   const DOMAIN_FIXES = {
     'ozon.ru': 'ozon.ru',
@@ -104,19 +97,14 @@
     'aliexpress.com': 'aliexpress.com'
   };
 
-  // Ручные иконки.
-  // Эти файлы должны лежать в /icons на GitHub Pages.
-  // Например:
-  // https://npekpacho.github.io/gsf/icons/platformaofd.png
+  // Ручные иконки. Файлы должны лежать в /icons на GitHub Pages.
+  // Пример: https://npekpacho.github.io/gsf/icons/platformaofd.png
+  // По умолчанию они используются после Google/DuckDuckGo, если домен не добавлен
+  // в CUSTOM_ICON_FIRST_DOMAINS.
   const CUSTOM_ICON_FILES = {
     'platformaofd.ru': 'platformaofd.png',
     'cloudpayments.ru': 'cloudpayments.png',
-    'aliexpress.ru': 'aliexpress.png',
-
-    // Можно пополнять:
-    // 'gosuslugi.ru': 'gosuslugi.png',
-    // 'sberbank.ru': 'sberbank.png',
-    // 'ekfgroup.com': 'ekfgroup.png'
+    'aliexpress.ru': 'aliexpress.png'
   };
 
   const DOMAIN_FIX_ENTRIES = Object.entries(DOMAIN_FIXES)
@@ -133,50 +121,29 @@
 
     const style = document.createElement('style');
     style.id = STYLE_ID;
-
     style.textContent = `
       .${BADGE_CLASS} {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 auto;
-        width: 18px;
-        height: 18px;
-        min-width: 18px;
-        margin-right: 8px;
-        vertical-align: middle;
-        user-select: none;
-        pointer-events: none;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 auto !important;
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px !important;
+        margin-right: 8px !important;
+        border-radius: 4px !important;
+        vertical-align: middle !important;
+        user-select: none !important;
+        pointer-events: none !important;
+        overflow: hidden !important;
       }
 
       .${BADGE_CLASS} img {
-        display: block;
-        width: 18px;
-        height: 18px;
-        border-radius: 4px;
-        object-fit: contain;
-      }
-
-      .${LETTER_CLASS} {
-        display: block;
-        width: 18px;
-        height: 18px;
-        border-radius: 4px;
-        color: #fff;
-        font-weight: 700;
-        font-size: 11px;
-        line-height: 18px;
-        text-align: center;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
-      }
-
-      tr.zA .${BADGE_CLASS} {
-        opacity: .95;
-      }
-
-      tr.zA:hover .${BADGE_CLASS} {
-        opacity: 1;
+        display: block !important;
+        width: 18px !important;
+        height: 18px !important;
+        border-radius: 4px !important;
+        object-fit: contain !important;
       }
     `;
 
@@ -296,19 +263,19 @@
       .join('/');
   }
 
-  function getCustomIconUrl(domain) {
-    const file = CUSTOM_ICON_FILES[domain];
-    if (!file) return '';
-
-    return `${ICON_BASE}/${encodePath(file)}`;
-  }
-
   function getGoogleFaviconUrl(domain) {
     return `https://www.google.com/s2/favicons?sz=32&domain_url=${encodeURIComponent(domain)}`;
   }
 
   function getDuckDuckGoFaviconUrl(domain) {
     return `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`;
+  }
+
+  function getCustomIconUrl(domain) {
+    const file = CUSTOM_ICON_FILES[domain];
+    if (!file) return '';
+
+    return `${ICON_BASE}/${encodePath(file)}`;
   }
 
   function addDomainSources(urls, domain) {
@@ -378,12 +345,40 @@
     return null;
   }
 
-  function makeLetterBadge(domain, letter) {
-    const span = document.createElement('span');
-    span.className = LETTER_CLASS;
-    span.textContent = letter;
-    span.style.backgroundColor = stableColor(domain || letter);
-    return span;
+  function applyLetterFallback(badge, domain, letter) {
+    const safeLetter = letter || '?';
+
+    badge.textContent = safeLetter;
+
+    Object.assign(badge.style, {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: '0 0 auto',
+      width: '18px',
+      height: '18px',
+      minWidth: '18px',
+      marginRight: '8px',
+      borderRadius: '4px',
+      color: '#fff',
+      fontWeight: '700',
+      fontSize: '11px',
+      lineHeight: '18px',
+      textAlign: 'center',
+      textShadow: '0 1px 2px rgba(0,0,0,.35)',
+      backgroundColor: stableColor(domain || safeLetter),
+      userSelect: 'none',
+      pointerEvents: 'none',
+      verticalAlign: 'middle',
+      overflow: 'hidden'
+    });
+  }
+
+  function applyImageBadge(badge, img) {
+    badge.textContent = '';
+    badge.style.backgroundColor = 'transparent';
+    badge.style.textShadow = 'none';
+    badge.replaceChildren(img);
   }
 
   function makeBadge(rawDomain, letter, email) {
@@ -393,11 +388,12 @@
     badge.className = BADGE_CLASS;
     badge.dataset.email = email || '';
     badge.dataset.domain = normalizedDomain || '';
+    badge.dataset.letter = letter || '?';
     badge.title = normalizedDomain || email || 'sender';
     badge.setAttribute('aria-hidden', 'true');
 
-    // Сразу показываем букву, чтобы не было пустых дыр.
-    badge.replaceChildren(makeLetterBadge(normalizedDomain || rawDomain, letter));
+    // Сначала всегда ставим букву. Никаких пустых мест, даже если всё внешнее умерло.
+    applyLetterFallback(badge, normalizedDomain || rawDomain, letter);
 
     const sources = buildIconSources(rawDomain);
     let index = 0;
@@ -406,10 +402,18 @@
       if (index >= sources.length) return;
 
       const url = sources[index];
-
       const img = document.createElement('img');
+
       img.alt = '';
       img.decoding = 'async';
+
+      Object.assign(img.style, {
+        display: 'block',
+        width: '18px',
+        height: '18px',
+        borderRadius: '4px',
+        objectFit: 'contain'
+      });
 
       img.onerror = () => {
         FAILED_ICON_URLS.add(url);
@@ -425,7 +429,7 @@
           return;
         }
 
-        badge.replaceChildren(img);
+        applyImageBadge(badge, img);
       };
 
       img.src = url;
@@ -464,8 +468,7 @@
 
     const currentBadge = target.querySelector(`.${BADGE_CLASS}`);
 
-    // Gmail любит переиспользовать строки.
-    // Поэтому проверяем не просто наличие значка, а соответствие отправителю.
+    // Gmail переиспользует DOM-строки. Проверяем, что значок относится к этому же отправителю.
     if (
       currentBadge &&
       currentBadge.dataset.email === info.email &&
@@ -550,8 +553,8 @@
     startObserver();
     enhanceAll();
 
-    // Gmail иногда меняет существующие строки без нормального добавления новых узлов.
-    // Поэтому контрольный проход оставляем.
+    // Gmail иногда меняет существующие строки без добавления новых узлов.
+    // Контрольный проход оставляем, но не слишком частый.
     setInterval(() => {
       scheduleEnhance();
     }, SCAN_INTERVAL_MS);
