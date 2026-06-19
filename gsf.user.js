@@ -167,7 +167,7 @@
   // Значение: имя файла в /images.
   // Пример: https://npekpacho.github.io/gsf/images/platformaofd.png
   const LOCAL_IMAGES = {
-    'chek.pofd.ru': 'platformaofd.png',
+    'pofd.ru': 'platformaofd.png',
     'platformaofd.ru': 'platformaofd.png',
     'cloudpayments.ru': 'cloudpayments.png',
     'aliexpress.ru': 'aliexpress.png',
