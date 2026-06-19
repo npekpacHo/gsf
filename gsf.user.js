@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name           GSF (ИПИГ) - Иконки для писем в Gmail
 // @namespace      https://github.com/npekpacHo/gsf
-// @version        1.50
+// @version        1.60
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
 // @author         westakof, npekpacHo
 // @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
 // @homepageURL    https://github.com/npekpacHo/gsf
 // @supportURL     https://github.com/npekpacHo/gsf/issues
-// @updateURL      https://raw.githubusercontent.com/npekpacHo/gsf/main/gsf.user.js
-// @downloadURL    https://raw.githubusercontent.com/npekpacHo/gsf/main/gsf.user.js
+// @updateURL      https://npekpacho.github.io/gsf/gsf.user.js
+// @downloadURL    https://npekpacho.github.io/gsf/gsf.user.js
 // @match          https://mail.google.com/*
 // @run-at         document-end
 // @grant          none
@@ -23,24 +23,41 @@
   const BADGE_CLASS = `${SCRIPT_ID}-badge`;
   const LETTER_CLASS = `${SCRIPT_ID}-letter`;
 
-  const RAW_BASE = 'https://raw.githubusercontent.com/npekpacHo/gsf/main';
-  const ICON_BASE = `${RAW_BASE}/icons`;
+  const GSF_BASE = 'https://npekpacho.github.io/gsf';
+  const ICON_BASE = `${GSF_BASE}/icons`;
 
   const SCAN_INTERVAL_MS = 3000;
   const DEBOUNCE_MS = 120;
 
-  // true: сначала берём иконки из GitHub.
-  const USE_GITHUB_ICONS = true;
+  // Главная идея:
+  // 1. Сначала берём favicon сайта.
+  // 2. Потом пробуем DuckDuckGo.
+  // 3. Только потом свои иконки с GitHub Pages.
+  // 4. Если всё плохо, показываем цветную букву.
+  const USE_GOOGLE_FAVICONS = true;
+  const USE_DUCKDUCKGO_FAVICONS = true;
+  const USE_CUSTOM_ICONS = true;
 
-  // true: если иконки нет в GitHub, пробуем Google/DDG favicon.
-  // false: только GitHub + буквенные заглушки. Больше приватности, меньше красоты.
-  const USE_EXTERNAL_FAVICON_SERVICES = true;
+  // Некоторые домены можно принудительно вести на свою иконку первой.
+  // Это нужно, если Google/DDG стабильно возвращают мусор или не тот бренд.
+  const CUSTOM_ICON_FIRST_DOMAINS = new Set([
+    // 'platformaofd.ru',
+    // 'cloudpayments.ru'
+  ]);
 
-  // Домены отправителей приводим к нормальному домену бренда.
+  // Исправление доменов.
+  // Слева: домен отправителя или его часть.
+  // Справа: домен сайта, favicon которого надо показывать.
   const DOMAIN_FIXES = {
     'ozon.ru': 'ozon.ru',
+    'mailer.ozon.ru': 'ozon.ru',
+
     'vk.com': 'vk.com',
+    'notify.vk.com': 'vk.com',
+
     'dom.ru': 'dom.ru',
+    'b2b.dom.ru': 'dom.ru',
+
     'gosuslugi.ru': 'gosuslugi.ru',
 
     'wildberries.ru': 'wildberries.ru',
@@ -56,6 +73,7 @@
     'creatify.ai': 'creatify.ai',
     'etm.ru': 'etm.ru',
     'lemanapro.ru': 'lemanapro.ru',
+
     'bigam-info.ru': 'bigam.ru',
 
     '5ka.ru': '5ka.ru',
@@ -86,42 +104,19 @@
     'aliexpress.com': 'aliexpress.com'
   };
 
-  // Файлы, которые лежат в папке /icons репозитория.
-  // Можно постепенно пополнять. Нет файла? Ничего страшного, будет fallback.
-  const GITHUB_ICON_FILES = {
-    'ozon.ru': 'ozon.ru.png',
-    'vk.com': 'vk.com.png',
-    'dom.ru': 'dom.ru.png',
-    'gosuslugi.ru': 'gosuslugi.ru.png',
-    'wildberries.ru': 'wildberries.ru.png',
-    'sberbank.ru': 'sberbank.ru.png',
-    'tinkoff.ru': 'tinkoff.ru.png',
-    'yandex.ru': 'yandex.ru.png',
-    'dns-shop.ru': 'dns-shop.ru.png',
-    'creatify.ai': 'creatify.ai.png',
-    'etm.ru': 'etm.ru.png',
-    'lemanapro.ru': 'lemanapro.ru.png',
-    'bigam.ru': 'bigam.ru.png',
-    '5ka.ru': '5ka.ru.png',
-    'platformaofd.ru': 'platformaofd.ru.png',
-    'suno.com': 'suno.com.png',
-    'ggsel.com': 'ggsel.com.png',
-    'zarplata.ru': 'zarplata.ru.png',
-    'rgs.ru': 'rgs.ru.png',
-    'promopult.ru': 'promopult.ru.png',
-    'systeme-electric.ru': 'systeme-electric.ru.png',
-    'hik-partner.com': 'hik-partner.com.png',
-    'vivino.com': 'vivino.com.png',
-    'termius.com': 'termius.com.png',
-    'live.com': 'live.com.png',
-    'instagram.com': 'instagram.com.png',
-    'ekfgroup.com': 'ekfgroup.com.png',
-    'getcontact.com': 'getcontact.com.png',
-    'ea.com': 'ea.com.png',
-    'trassir.com': 'trassir.com.png',
-    'cloudpayments.ru': 'cloudpayments.ru.png',
-    'aliexpress.ru': 'aliexpress.ru.png',
-    'aliexpress.com': 'aliexpress.com.png'
+  // Ручные иконки.
+  // Эти файлы должны лежать в /icons на GitHub Pages.
+  // Например:
+  // https://npekpacho.github.io/gsf/icons/platformaofd.png
+  const CUSTOM_ICON_FILES = {
+    'platformaofd.ru': 'platformaofd.png',
+    'cloudpayments.ru': 'cloudpayments.png',
+    'aliexpress.ru': 'aliexpress.png',
+
+    // Можно пополнять:
+    // 'gosuslugi.ru': 'gosuslugi.png',
+    // 'sberbank.ru': 'sberbank.png',
+    // 'ekfgroup.com': 'ekfgroup.png'
   };
 
   const DOMAIN_FIX_ENTRIES = Object.entries(DOMAIN_FIXES)
@@ -138,6 +133,7 @@
 
     const style = document.createElement('style');
     style.id = STYLE_ID;
+
     style.textContent = `
       .${BADGE_CLASS} {
         display: inline-flex;
@@ -146,6 +142,7 @@
         flex: 0 0 auto;
         width: 18px;
         height: 18px;
+        min-width: 18px;
         margin-right: 8px;
         vertical-align: middle;
         user-select: none;
@@ -299,29 +296,50 @@
       .join('/');
   }
 
-  function getGithubIconUrl(domain) {
-    const file = GITHUB_ICON_FILES[domain];
+  function getCustomIconUrl(domain) {
+    const file = CUSTOM_ICON_FILES[domain];
     if (!file) return '';
 
     return `${ICON_BASE}/${encodePath(file)}`;
+  }
+
+  function getGoogleFaviconUrl(domain) {
+    return `https://www.google.com/s2/favicons?sz=32&domain_url=${encodeURIComponent(domain)}`;
+  }
+
+  function getDuckDuckGoFaviconUrl(domain) {
+    return `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`;
+  }
+
+  function addDomainSources(urls, domain) {
+    if (!domain) return;
+
+    const customUrl = getCustomIconUrl(domain);
+    const customFirst = CUSTOM_ICON_FIRST_DOMAINS.has(domain);
+
+    if (USE_CUSTOM_ICONS && customFirst && customUrl) {
+      urls.push(customUrl);
+    }
+
+    if (USE_GOOGLE_FAVICONS) {
+      urls.push(getGoogleFaviconUrl(domain));
+    }
+
+    if (USE_DUCKDUCKGO_FAVICONS) {
+      urls.push(getDuckDuckGoFaviconUrl(domain));
+    }
+
+    if (USE_CUSTOM_ICONS && !customFirst && customUrl) {
+      urls.push(customUrl);
+    }
   }
 
   function buildIconSources(rawDomain) {
     const domains = getIconDomains(rawDomain);
     const urls = [];
 
-    if (USE_GITHUB_ICONS) {
-      for (const domain of domains) {
-        const githubUrl = getGithubIconUrl(domain);
-        if (githubUrl) urls.push(githubUrl);
-      }
-    }
-
-    if (USE_EXTERNAL_FAVICON_SERVICES) {
-      for (const domain of domains) {
-        urls.push(`https://www.google.com/s2/favicons?sz=32&domain_url=${encodeURIComponent(domain)}`);
-        urls.push(`https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`);
-      }
+    for (const domain of domains) {
+      addDomainSources(urls, domain);
     }
 
     return unique(urls).filter(url => !FAILED_ICON_URLS.has(url));
@@ -333,6 +351,7 @@
     const emailNode = row.querySelector('span[email], [email]');
     if (emailNode) {
       const email = emailNode.getAttribute('email') || extractEmailLike(emailNode.textContent);
+
       if (email) {
         return {
           email,
@@ -369,33 +388,28 @@
 
   function makeBadge(rawDomain, letter, email) {
     const normalizedDomain = normalizeDomain(rawDomain);
-    const badge = document.createElement('span');
 
+    const badge = document.createElement('span');
     badge.className = BADGE_CLASS;
     badge.dataset.email = email || '';
     badge.dataset.domain = normalizedDomain || '';
     badge.title = normalizedDomain || email || 'sender';
     badge.setAttribute('aria-hidden', 'true');
 
+    // Сразу показываем букву, чтобы не было пустых дыр.
+    badge.replaceChildren(makeLetterBadge(normalizedDomain || rawDomain, letter));
+
     const sources = buildIconSources(rawDomain);
     let index = 0;
 
-    const showLetter = () => {
-      badge.replaceChildren(makeLetterBadge(normalizedDomain || rawDomain, letter));
-    };
-
     const tryNext = () => {
-      if (index >= sources.length) {
-        showLetter();
-        return;
-      }
+      if (index >= sources.length) return;
 
       const url = sources[index];
 
       const img = document.createElement('img');
       img.alt = '';
       img.decoding = 'async';
-      img.loading = 'lazy';
 
       img.onerror = () => {
         FAILED_ICON_URLS.add(url);
@@ -419,8 +433,6 @@
 
     if (sources.length) {
       tryNext();
-    } else {
-      showLetter();
     }
 
     return badge;
@@ -452,6 +464,8 @@
 
     const currentBadge = target.querySelector(`.${BADGE_CLASS}`);
 
+    // Gmail любит переиспользовать строки.
+    // Поэтому проверяем не просто наличие значка, а соответствие отправителю.
     if (
       currentBadge &&
       currentBadge.dataset.email === info.email &&
@@ -536,6 +550,8 @@
     startObserver();
     enhanceAll();
 
+    // Gmail иногда меняет существующие строки без нормального добавления новых узлов.
+    // Поэтому контрольный проход оставляем.
     setInterval(() => {
       scheduleEnhance();
     }, SCAN_INTERVAL_MS);
