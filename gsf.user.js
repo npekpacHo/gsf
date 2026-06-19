@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           GSF (ИПИГ) - Иконки для писем в Gmail
 // @namespace      https://github.com/npekpacHo/gsf
-// @version        1.75
+// @version        1.80
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
 // @author         westakof, npekpacHo
 // @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
@@ -21,25 +21,70 @@
   const SCRIPT_ID = 'gsf';
   const STYLE_ID = `${SCRIPT_ID}-style`;
   const BADGE_CLASS = `${SCRIPT_ID}-badge`;
+  const BADGE_IMG_CLASS = `${SCRIPT_ID}-badge-img`;
+  const OVERLAY_CLASS = `${SCRIPT_ID}-overlay`;
 
   const GSF_BASE = 'https://npekpacho.github.io/gsf';
-  const ICON_BASE = `${GSF_BASE}/icons`;
+  const IMAGE_BASE = `${GSF_BASE}/images`;
 
   const SCAN_INTERVAL_MS = 3000;
   const DEBOUNCE_MS = 120;
 
   const USE_GOOGLE_FAVICONS = true;
   const USE_DUCKDUCKGO_FAVICONS = true;
-  const USE_CUSTOM_ICONS = true;
+  const USE_LOCAL_IMAGES = true;
 
-  // Если внешний favicon-сервис стабильно возвращает мусор для конкретного домена,
-  // можно добавить домен сюда. Тогда ручная иконка из /icons пойдёт первой.
-  const CUSTOM_ICON_FIRST_DOMAINS = new Set([
-    'anthropic.com': 'anthropic.png'
-  ]);
+  // Домены обычных пользовательских почтовых ящиков.
+  // Для них показываем иконку почтового сервиса + букву отправителя.
+  const MAIL_PROVIDERS = {
+    'gmail.com': 'gmail.com',
+    'googlemail.com': 'gmail.com',
 
-  // Исправления доменов. Слева: домен отправителя или его часть.
-  // Справа: домен сайта, favicon которого надо показывать.
+    'yandex.ru': 'yandex.ru',
+    'ya.ru': 'yandex.ru',
+    'yandex.com': 'yandex.ru',
+    'yandex.by': 'yandex.ru',
+    'yandex.kz': 'yandex.ru',
+    'yandex.ua': 'yandex.ru',
+
+    'mail.ru': 'mail.ru',
+    'bk.ru': 'mail.ru',
+    'inbox.ru': 'mail.ru',
+    'list.ru': 'mail.ru',
+    'internet.ru': 'mail.ru',
+
+    'outlook.com': 'outlook.com',
+    'hotmail.com': 'outlook.com',
+    'live.com': 'outlook.com',
+    'msn.com': 'outlook.com',
+
+    'icloud.com': 'icloud.com',
+    'me.com': 'icloud.com',
+    'mac.com': 'icloud.com',
+
+    'yahoo.com': 'yahoo.com',
+    'ymail.com': 'yahoo.com',
+    'rocketmail.com': 'yahoo.com',
+
+    'proton.me': 'proton.me',
+    'protonmail.com': 'proton.me',
+    'pm.me': 'proton.me',
+
+    'rambler.ru': 'rambler.ru',
+    'lenta.ru': 'rambler.ru',
+    'autorambler.ru': 'rambler.ru',
+    'myrambler.ru': 'rambler.ru',
+    'ro.ru': 'rambler.ru',
+
+    'aol.com': 'aol.com',
+    'zoho.com': 'zoho.com',
+    'gmx.com': 'gmx.com',
+    'gmx.net': 'gmx.com'
+  };
+
+  // Сопоставления доменов организаций и сервисов.
+  // Слева: домен отправителя или его часть.
+  // Справа: основной домен, favicon которого надо показывать.
   const DOMAIN_FIXES = {
     'ozon.ru': 'ozon.ru',
     'mailer.ozon.ru': 'ozon.ru',
@@ -83,7 +128,6 @@
     'vivino.com': 'vivino.com',
     'termius.com': 'termius.com',
 
-    'microsoft.com': 'live.com',
     'instagram.com': 'instagram.com',
     'ekf.su': 'ekfgroup.com',
     'getcontact.com': 'getcontact.com',
@@ -96,15 +140,14 @@
     'aliexpress.com': 'aliexpress.com'
   };
 
-  // Ручные иконки. Файлы должны лежать в /icons на GitHub Pages.
-  // Пример: https://npekpacho.github.io/gsf/icons/platformaofd.png
-  // По умолчанию они используются после Google/DuckDuckGo, если домен не добавлен
-  // в CUSTOM_ICON_FIRST_DOMAINS.
-  const CUSTOM_ICON_FILES = {
-    'email.anthropic.com': 'anthropic.png',
-    //'platformaofd.ru': 'platformaofd.png',
-    //'cloudpayments.ru': 'cloudpayments.png',
-    //'aliexpress.ru': 'aliexpress.png'
+  // Упрощённая папка локальных изображений.
+  // Ключ: основной домен.
+  // Значение: имя файла в /images.
+  // Пример: https://npekpacho.github.io/gsf/images/platformaofd.png
+  const LOCAL_IMAGES = {
+    'platformaofd.ru': 'platformaofd.png',
+    'cloudpayments.ru': 'cloudpayments.png',
+    'aliexpress.ru': 'aliexpress.png'
   };
 
   const DOMAIN_FIX_ENTRIES = Object.entries(DOMAIN_FIXES)
@@ -126,8 +169,8 @@
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
+        position: relative !important;
         flex: 0 0 auto !important;
-        width: 18px !important;
         height: 18px !important;
         min-width: 18px !important;
         margin-right: 8px !important;
@@ -135,15 +178,43 @@
         vertical-align: middle !important;
         user-select: none !important;
         pointer-events: none !important;
+        overflow: visible !important;
+      }
+
+      .${BADGE_CLASS}[data-gsf-kind="person"] {
+        width: 25px !important;
+      }
+
+      .${BADGE_CLASS}[data-gsf-kind="org"] {
+        width: 18px !important;
         overflow: hidden !important;
       }
 
-      .${BADGE_CLASS} img {
+      .${BADGE_IMG_CLASS} {
         display: block !important;
         width: 18px !important;
         height: 18px !important;
         border-radius: 4px !important;
         object-fit: contain !important;
+      }
+
+      .${OVERLAY_CLASS} {
+        position: absolute !important;
+        right: 0 !important;
+        bottom: -2px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 14px !important;
+        height: 14px !important;
+        border-radius: 999px !important;
+        color: #fff !important;
+        font-weight: 800 !important;
+        font-size: 9px !important;
+        line-height: 14px !important;
+        text-align: center !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,.55) !important;
+        box-shadow: 0 0 0 1px rgba(255,255,255,.95), 0 1px 3px rgba(0,0,0,.35) !important;
       }
     `;
 
@@ -173,19 +244,6 @@
       .trim()
       .toLowerCase()
       .replace(/[>\s]+$/g, '');
-  }
-
-  function normalizeDomain(originalDomain) {
-    const domain = String(originalDomain || '').trim().toLowerCase();
-    if (!domain) return '';
-
-    for (const [key, fix] of DOMAIN_FIX_ENTRIES) {
-      if (domain === key || domain.endsWith(`.${key}`)) {
-        return fix;
-      }
-    }
-
-    return domain;
   }
 
   function getBaseDomain(domain) {
@@ -218,21 +276,33 @@
     return parts.slice(-2).join('.');
   }
 
-  function unique(arr) {
-    return [...new Set(arr.filter(Boolean))];
+  function normalizeDomain(originalDomain) {
+    const domain = String(originalDomain || '').trim().toLowerCase();
+    if (!domain) return '';
+
+    for (const [key, fix] of DOMAIN_FIX_ENTRIES) {
+      if (domain === key || domain.endsWith(`.${key}`)) {
+        return fix;
+      }
+    }
+
+    return domain;
   }
 
-  function getIconDomains(rawDomain) {
-    const fixed = normalizeDomain(rawDomain);
-    const baseFixed = getBaseDomain(fixed);
-    const baseRaw = getBaseDomain(rawDomain);
+  function normalizeMailProvider(domain) {
+    const d = String(domain || '').trim().toLowerCase();
+    if (!d) return '';
 
-    return unique([
-      fixed,
-      baseFixed,
-      rawDomain,
-      baseRaw
-    ]);
+    if (MAIL_PROVIDERS[d]) return MAIL_PROVIDERS[d];
+
+    const base = getBaseDomain(d);
+    if (MAIL_PROVIDERS[base]) return MAIL_PROVIDERS[base];
+
+    return '';
+  }
+
+  function unique(arr) {
+    return [...new Set(arr.filter(Boolean))];
   }
 
   function stableColor(seed) {
@@ -243,15 +313,15 @@
       h = (h * 31 + s.charCodeAt(i)) | 0;
     }
 
-    return `hsl(${Math.abs(h) % 360}, 65%, 43%)`;
+    return `hsl(${Math.abs(h) % 360}, 68%, 40%)`;
   }
 
-  function pickLetter(senderText, domain) {
+  function pickLetter(senderText, fallback) {
     const fromName = String(senderText || '').match(/[a-z0-9а-яё]/i);
     if (fromName) return fromName[0].toUpperCase();
 
-    const fromDomain = String(domain || '').match(/[a-z0-9а-яё]/i);
-    if (fromDomain) return fromDomain[0].toUpperCase();
+    const fromFallback = String(fallback || '').match(/[a-z0-9а-яё]/i);
+    if (fromFallback) return fromFallback[0].toUpperCase();
 
     return '?';
   }
@@ -271,22 +341,18 @@
     return `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`;
   }
 
-  function getCustomIconUrl(domain) {
-    const file = CUSTOM_ICON_FILES[domain];
+  function getLocalImageUrl(domain) {
+    const file = LOCAL_IMAGES[domain];
     if (!file) return '';
 
-    return `${ICON_BASE}/${encodePath(file)}`;
+    return `${IMAGE_BASE}/${encodePath(file)}`;
   }
 
-  function addDomainSources(urls, domain) {
-    if (!domain) return;
+  function buildIconSources(iconDomain) {
+    const domain = getBaseDomain(iconDomain || '');
+    const urls = [];
 
-    const customUrl = getCustomIconUrl(domain);
-    const customFirst = CUSTOM_ICON_FIRST_DOMAINS.has(domain);
-
-    if (USE_CUSTOM_ICONS && customFirst && customUrl) {
-      urls.push(customUrl);
-    }
+    if (!domain) return urls;
 
     if (USE_GOOGLE_FAVICONS) {
       urls.push(getGoogleFaviconUrl(domain));
@@ -296,20 +362,46 @@
       urls.push(getDuckDuckGoFaviconUrl(domain));
     }
 
-    if (USE_CUSTOM_ICONS && !customFirst && customUrl) {
-      urls.push(customUrl);
-    }
-  }
-
-  function buildIconSources(rawDomain) {
-    const domains = getIconDomains(rawDomain);
-    const urls = [];
-
-    for (const domain of domains) {
-      addDomainSources(urls, domain);
+    if (USE_LOCAL_IMAGES) {
+      const localUrl = getLocalImageUrl(domain);
+      if (localUrl) urls.push(localUrl);
     }
 
     return unique(urls).filter(url => !FAILED_ICON_URLS.has(url));
+  }
+
+  function getSenderModel(info) {
+    const email = info.email;
+    const rawDomain = getDomainFromEmail(email);
+
+    const mailProvider = normalizeMailProvider(rawDomain);
+
+    if (mailProvider) {
+      return {
+        kind: 'person',
+        email,
+        rawDomain,
+        iconDomain: mailProvider,
+        mainDomain: mailProvider,
+        baseLetter: pickLetter(mailProvider, mailProvider),
+        overlayLetter: pickLetter(info.senderText, email),
+        senderText: info.senderText || email
+      };
+    }
+
+    const fixedDomain = normalizeDomain(rawDomain);
+    const mainDomain = getBaseDomain(fixedDomain);
+
+    return {
+      kind: 'org',
+      email,
+      rawDomain,
+      iconDomain: mainDomain,
+      mainDomain,
+      baseLetter: pickLetter(info.senderText, mainDomain),
+      overlayLetter: '',
+      senderText: info.senderText || email
+    };
   }
 
   function findSenderInfo(row) {
@@ -345,19 +437,21 @@
     return null;
   }
 
-  function applyLetterFallback(badge, domain, letter) {
-    const safeLetter = letter || '?';
+  function setBaseFallback(badge, model) {
+    const letter = model.baseLetter || '?';
+    const size = model.kind === 'person' ? '25px' : '18px';
 
-    badge.textContent = safeLetter;
+    badge.textContent = letter;
 
     Object.assign(badge.style, {
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
+      position: 'relative',
       flex: '0 0 auto',
-      width: '18px',
+      width: size,
       height: '18px',
-      minWidth: '18px',
+      minWidth: size,
       marginRight: '8px',
       borderRadius: '4px',
       color: '#fff',
@@ -365,55 +459,100 @@
       fontSize: '11px',
       lineHeight: '18px',
       textAlign: 'center',
-      textShadow: '0 1px 2px rgba(0,0,0,.35)',
-      backgroundColor: stableColor(domain || safeLetter),
+      textShadow: '0 1px 2px rgba(0,0,0,.45)',
+      backgroundColor: stableColor(model.iconDomain || model.email || letter),
       userSelect: 'none',
       pointerEvents: 'none',
       verticalAlign: 'middle',
-      overflow: 'hidden'
+      overflow: model.kind === 'person' ? 'visible' : 'hidden'
     });
+
+    if (model.kind === 'person') {
+      badge.appendChild(makeOverlay(model.overlayLetter, model.email));
+    }
   }
 
-  function applyImageBadge(badge, img) {
+  function makeOverlay(letter, seed) {
+    const overlay = document.createElement('span');
+    overlay.className = OVERLAY_CLASS;
+    overlay.textContent = letter || '?';
+
+    Object.assign(overlay.style, {
+      position: 'absolute',
+      right: '0',
+      bottom: '-2px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '14px',
+      height: '14px',
+      borderRadius: '999px',
+      color: '#fff',
+      fontWeight: '800',
+      fontSize: '9px',
+      lineHeight: '14px',
+      textAlign: 'center',
+      textShadow: '0 1px 2px rgba(0,0,0,.55)',
+      backgroundColor: stableColor(seed || letter),
+      boxShadow: '0 0 0 1px rgba(255,255,255,.95), 0 1px 3px rgba(0,0,0,.35)'
+    });
+
+    return overlay;
+  }
+
+  function makeImage(url) {
+    const img = document.createElement('img');
+    img.className = BADGE_IMG_CLASS;
+    img.alt = '';
+    img.decoding = 'async';
+
+    Object.assign(img.style, {
+      display: 'block',
+      width: '18px',
+      height: '18px',
+      borderRadius: '4px',
+      objectFit: 'contain'
+    });
+
+    img.src = url;
+
+    return img;
+  }
+
+  function applyImageBadge(badge, img, model) {
     badge.textContent = '';
     badge.style.backgroundColor = 'transparent';
     badge.style.textShadow = 'none';
     badge.replaceChildren(img);
+
+    if (model.kind === 'person') {
+      badge.appendChild(makeOverlay(model.overlayLetter, model.email));
+    }
   }
 
-  function makeBadge(rawDomain, letter, email) {
-    const normalizedDomain = normalizeDomain(rawDomain);
-
+  function makeBadge(model) {
     const badge = document.createElement('span');
     badge.className = BADGE_CLASS;
-    badge.dataset.email = email || '';
-    badge.dataset.domain = normalizedDomain || '';
-    badge.dataset.letter = letter || '?';
-    badge.title = normalizedDomain || email || 'sender';
+    badge.dataset.gsfKind = model.kind;
+    badge.dataset.gsfEmail = model.email || '';
+    badge.dataset.gsfDomain = model.iconDomain || '';
+    badge.dataset.gsfLetter = model.overlayLetter || model.baseLetter || '?';
+    badge.title = model.kind === 'person'
+      ? `${model.senderText} • ${model.iconDomain}`
+      : model.iconDomain;
     badge.setAttribute('aria-hidden', 'true');
 
-    // Сначала всегда ставим букву. Никаких пустых мест, даже если всё внешнее умерло.
-    applyLetterFallback(badge, normalizedDomain || rawDomain, letter);
+    // Сначала всегда показываем fallback, чтобы никогда не было пустого места.
+    setBaseFallback(badge, model);
 
-    const sources = buildIconSources(rawDomain);
+    const sources = buildIconSources(model.iconDomain);
     let index = 0;
 
     const tryNext = () => {
       if (index >= sources.length) return;
 
       const url = sources[index];
-      const img = document.createElement('img');
-
-      img.alt = '';
-      img.decoding = 'async';
-
-      Object.assign(img.style, {
-        display: 'block',
-        width: '18px',
-        height: '18px',
-        borderRadius: '4px',
-        objectFit: 'contain'
-      });
+      const img = makeImage(url);
 
       img.onerror = () => {
         FAILED_ICON_URLS.add(url);
@@ -429,10 +568,8 @@
           return;
         }
 
-        applyImageBadge(badge, img);
+        applyImageBadge(badge, img, model);
       };
-
-      img.src = url;
     };
 
     if (sources.length) {
@@ -457,27 +594,26 @@
     const info = findSenderInfo(row);
     if (!info || !info.email) return;
 
-    const rawDomain = getDomainFromEmail(info.email);
-    if (!rawDomain) return;
-
-    const normalizedDomain = normalizeDomain(rawDomain);
-    const letter = pickLetter(info.senderText, normalizedDomain || rawDomain);
     const target = getTargetNode(row, info);
-
     if (!target) return;
+
+    const model = getSenderModel(info);
+    if (!model.iconDomain) return;
 
     const currentBadge = target.querySelector(`.${BADGE_CLASS}`);
 
-    // Gmail переиспользует DOM-строки. Проверяем, что значок относится к этому же отправителю.
+    // Gmail переиспользует DOM-строки. Поэтому проверяем, тот ли это отправитель.
     if (
       currentBadge &&
-      currentBadge.dataset.email === info.email &&
-      currentBadge.dataset.domain === normalizedDomain
+      currentBadge.dataset.gsfEmail === model.email &&
+      currentBadge.dataset.gsfDomain === model.iconDomain &&
+      currentBadge.dataset.gsfKind === model.kind &&
+      currentBadge.dataset.gsfLetter === (model.overlayLetter || model.baseLetter || '?')
     ) {
       return;
     }
 
-    const newBadge = makeBadge(rawDomain, letter, info.email);
+    const newBadge = makeBadge(model);
 
     if (currentBadge) {
       currentBadge.replaceWith(newBadge);
@@ -554,7 +690,6 @@
     enhanceAll();
 
     // Gmail иногда меняет существующие строки без добавления новых узлов.
-    // Контрольный проход оставляем, но не слишком частый.
     setInterval(() => {
       scheduleEnhance();
     }, SCAN_INTERVAL_MS);
