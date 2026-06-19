@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           GSF (ИПИГ) - Иконки для писем в Gmail
 // @namespace      https://github.com/npekpacHo/gsf
-// @version        1.81
+// @version        1.82
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
 // @author         westakof, npekpacHo
 // @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
@@ -82,6 +82,28 @@
     'gmx.net': 'gmx.com'
   };
 
+  // Отдельные проекты на поддоменах.
+  // Для них НЕ схлопываем домен до yandex.ru, потому что это самостоятельные сервисы.
+  const PROJECT_DOMAINS = {
+    'uslugi.yandex.ru': 'uslugi.yandex.ru',
+    'webmaster.yandex.ru': 'webmaster.yandex.ru',
+    'metrika.yandex.ru': 'metrika.yandex.ru',
+    'direct.yandex.ru': 'direct.yandex.ru',
+    'business.yandex.ru': 'business.yandex.ru',
+    'cloud.yandex.ru': 'cloud.yandex.ru',
+    'forms.yandex.ru': 'forms.yandex.ru',
+    'disk.yandex.ru': 'disk.yandex.ru',
+    'music.yandex.ru': 'music.yandex.ru',
+    'market.yandex.ru': 'market.yandex.ru',
+    'pay.yandex.ru': 'pay.yandex.ru',
+    'travel.yandex.ru': 'travel.yandex.ru',
+    'taxi.yandex.ru': 'taxi.yandex.ru',
+    'go.yandex.ru': 'go.yandex.ru',
+    'eda.yandex.ru': 'eda.yandex.ru',
+    'lavka.yandex.ru': 'lavka.yandex.ru',
+    'kinopoisk.ru': 'kinopoisk.ru'
+  };
+
   // Сопоставления доменов организаций и сервисов.
   // Слева: домен отправителя или его часть.
   // Справа: основной домен, favicon которого надо показывать.
@@ -147,10 +169,35 @@
   const LOCAL_IMAGES = {
     'platformaofd.ru': 'platformaofd.png',
     'cloudpayments.ru': 'cloudpayments.png',
-    'aliexpress.ru': 'aliexpress.png'
+    'aliexpress.ru': 'aliexpress.png',
+
+    'uslugi.yandex.ru': 'yandex-uslugi.png',
+    'webmaster.yandex.ru': 'yandex-webmaster.png',
+    'metrika.yandex.ru': 'yandex-metrika.png',
+    'direct.yandex.ru': 'yandex-direct.png',
+    'business.yandex.ru': 'yandex-business.png',
+    'cloud.yandex.ru': 'yandex-cloud.png',
+    'forms.yandex.ru': 'yandex-forms.png',
+    'disk.yandex.ru': 'yandex-disk.png',
+    'music.yandex.ru': 'yandex-music.png',
+    'market.yandex.ru': 'yandex-market.png',
+    'pay.yandex.ru': 'yandex-pay.png',
+    'travel.yandex.ru': 'yandex-travel.png',
+    'taxi.yandex.ru': 'yandex-taxi.png',
+    'go.yandex.ru': 'yandex-go.png',
+    'eda.yandex.ru': 'yandex-eda.png',
+    'lavka.yandex.ru': 'yandex-lavka.png',
+    'kinopoisk.ru': 'kinopoisk.png'
   };
 
+  // Для этих доменов локальная картинка из /images идёт перед Google/DuckDuckGo.
+  // Это нужно как раз для отдельных проектов на поддоменах.
+  const LOCAL_IMAGE_FIRST_DOMAINS = new Set(Object.keys(PROJECT_DOMAINS));
+
   const DOMAIN_FIX_ENTRIES = Object.entries(DOMAIN_FIXES)
+    .sort((a, b) => b[0].length - a[0].length);
+
+  const PROJECT_DOMAIN_ENTRIES = Object.entries(PROJECT_DOMAINS)
     .sort((a, b) => b[0].length - a[0].length);
 
   const FAILED_ICON_URLS = new Set();
@@ -287,16 +334,26 @@
     return domain;
   }
 
+  function normalizeProjectDomain(domain) {
+    const d = String(domain || '').trim().toLowerCase();
+    if (!d) return '';
+
+    for (const [key, projectDomain] of PROJECT_DOMAIN_ENTRIES) {
+      if (d === key || d.endsWith(`.${key}`)) {
+        return projectDomain;
+      }
+    }
+
+    return '';
+  }
+
   function normalizeMailProvider(domain) {
     const d = String(domain || '').trim().toLowerCase();
     if (!d) return '';
 
-    if (MAIL_PROVIDERS[d]) return MAIL_PROVIDERS[d];
-
-    const base = getBaseDomain(d);
-    if (MAIL_PROVIDERS[base]) return MAIL_PROVIDERS[base];
-
-    return '';
+    // Важно: только точное совпадение.
+    // uslugi.yandex.ru не должен превращаться в личный ящик yandex.ru.
+    return MAIL_PROVIDERS[d] || '';
   }
 
   function unique(arr) {
@@ -347,10 +404,17 @@
   }
 
   function buildIconSources(iconDomain) {
-    const domain = getBaseDomain(iconDomain || '');
+    const domain = String(iconDomain || '').trim().toLowerCase();
     const urls = [];
 
     if (!domain) return urls;
+
+    const localUrl = USE_LOCAL_IMAGES ? getLocalImageUrl(domain) : '';
+    const localFirst = LOCAL_IMAGE_FIRST_DOMAINS.has(domain);
+
+    if (localFirst && localUrl) {
+      urls.push(localUrl);
+    }
 
     if (USE_GOOGLE_FAVICONS) {
       urls.push(getGoogleFaviconUrl(domain));
@@ -360,9 +424,8 @@
       urls.push(getDuckDuckGoFaviconUrl(domain));
     }
 
-    if (USE_LOCAL_IMAGES) {
-      const localUrl = getLocalImageUrl(domain);
-      if (localUrl) urls.push(localUrl);
+    if (!localFirst && localUrl) {
+      urls.push(localUrl);
     }
 
     return unique(urls).filter(url => !FAILED_ICON_URLS.has(url));
@@ -371,6 +434,21 @@
   function getSenderModel(info) {
     const email = info.email;
     const rawDomain = getDomainFromEmail(email);
+
+    const projectDomain = normalizeProjectDomain(rawDomain);
+
+    if (projectDomain) {
+      return {
+        kind: 'org',
+        email,
+        rawDomain,
+        iconDomain: projectDomain,
+        mainDomain: projectDomain,
+        baseLetter: pickLetter(info.senderText, projectDomain),
+        overlayLetter: '',
+        senderText: info.senderText || email
+      };
+    }
 
     const mailProvider = normalizeMailProvider(rawDomain);
 
