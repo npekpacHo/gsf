@@ -101,7 +101,7 @@
   // По умолчанию они используются после Google/DuckDuckGo, если домен не добавлен
   // в CUSTOM_ICON_FIRST_DOMAINS.
   const CUSTOM_ICON_FILES = {
-    'anthropic.com': 'anthropic.png',
+    'email.anthropic.com': 'anthropic.png',
     //'platformaofd.ru': 'platformaofd.png',
     //'cloudpayments.ru': 'cloudpayments.png',
     //'aliexpress.ru': 'aliexpress.png'
