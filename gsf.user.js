@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           GSF (ИПИГ) - Иконки для писем в Gmail
 // @namespace      https://github.com/npekpacHo/gsf
-// @version        1.71
+// @version        1.72
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
 // @author         westakof, npekpacHo
 // @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
@@ -35,7 +35,7 @@
   // Если внешний favicon-сервис стабильно возвращает мусор для конкретного домена,
   // можно добавить домен сюда. Тогда ручная иконка из /icons пойдёт первой.
   const CUSTOM_ICON_FIRST_DOMAINS = new Set([
-    'anthropic.com': 'anthropic.png'
+    //'anthropic.com': 'claude.ai'
   ]);
 
   // Исправления доменов. Слева: домен отправителя или его часть.
@@ -101,9 +101,10 @@
   // По умолчанию они используются после Google/DuckDuckGo, если домен не добавлен
   // в CUSTOM_ICON_FIRST_DOMAINS.
   const CUSTOM_ICON_FILES = {
-    'platformaofd.ru': 'platformaofd.png',
-    'cloudpayments.ru': 'cloudpayments.png',
-    'aliexpress.ru': 'aliexpress.png'
+    'anthropic.com': 'anthropic.png',
+    //'platformaofd.ru': 'platformaofd.png',
+    //'cloudpayments.ru': 'cloudpayments.png',
+    //'aliexpress.ru': 'aliexpress.png'
   };
 
   const DOMAIN_FIX_ENTRIES = Object.entries(DOMAIN_FIXES)
