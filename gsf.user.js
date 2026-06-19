@@ -7,8 +7,8 @@
 // @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
 // @homepageURL    https://github.com/npekpacHo/gsf
 // @supportURL     https://github.com/npekpacHo/gsf/issues
-// @updateURL      https://raw.githubusercontent.com/npekpacHo/gsf/main/gsf.js
-// @downloadURL    https://raw.githubusercontent.com/npekpacHo/gsf/main/gsf.js
+// @updateURL      https://raw.githubusercontent.com/npekpacHo/gsf/main/gsf.user.js
+// @downloadURL    https://raw.githubusercontent.com/npekpacHo/gsf/main/gsf.user.js
 // @match          https://mail.google.com/*
 // @run-at         document-end
 // @grant          none
