@@ -375,7 +375,7 @@
     'cloud.mail.ru': 'cloud.mail.ru',
     'biz.mail.ru': 'biz.mail.ru', // VK WorkSpace
     'pulse.mail.ru': 'pulse.mail.ru',
-    'vkplay.ru': 'vkplay.ru'
+    'vkplay.ru': 'vkplay.ru',
     'uslugi.yandex.ru': 'uslugi.yandex.ru',
     'webmaster.yandex.ru': 'webmaster.yandex.ru',
     'metrika.yandex.ru': 'metrika.yandex.ru',
