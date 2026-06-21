@@ -4,7 +4,7 @@
 // @version        1.86.2
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
 // @author         npekpacHo
-// @description    Добавляет иконки отправителей в Gmail.
+// @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
 // @homepageURL    https://github.com/npekpacHo/gsf
 // @supportURL     https://github.com/npekpacHo/gsf/issues
 // @updateURL      https://npekpacho.github.io/gsf/gsf.user.js
@@ -35,7 +35,7 @@
   const USE_LOCAL_IMAGES = true;
   const USE_BIMI = true;
 
-  const ICON_CACHE_KEY = 'gsf.iconSourceCache.v4';
+  const ICON_CACHE_KEY = 'gsf.iconSourceCache.v5';
   const ICON_CACHE_MAX_ITEMS = 500;
   const ICON_CACHE_TTL_SUCCESS = 1000 * 60 * 60 * 24 * 30;
   const ICON_CACHE_TTL_EMPTY = 1000 * 60 * 60 * 24 * 7;
@@ -400,7 +400,6 @@
   // Справа: основной домен, favicon которого надо показывать.
   const DOMAIN_FIXES = {
     'ite.events': 'ite.group',
-    
     'ozon.ru': 'ozon.ru',
     'mailer.ozon.ru': 'ozon.ru',
 
