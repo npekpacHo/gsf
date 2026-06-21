@@ -543,7 +543,7 @@
   // Это нужно как раз для отдельных проектов на поддоменах.
   const LOCAL_IMAGE_FIRST_DOMAINS = new Set([
     ...Object.keys(PROJECT_DOMAINS),
-    ...SERVICE_SENDERS.map(rule => rule.key)
+    ...SERVICE_SENDERS.map(rule => rule.key),
     'ite.group'
   ]);
 
