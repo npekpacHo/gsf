@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name           GSF (ИПИГ) - Иконки для писем в Gmail
 // @namespace      https://github.com/npekpacHo/gsf
-// @version        1.84
+// @version        1.85
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
-// @author         westakof, npekpacHo
+// @author         npekpacHo
 // @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
 // @homepageURL    https://github.com/npekpacHo/gsf
 // @supportURL     https://github.com/npekpacHo/gsf/issues
@@ -229,11 +229,99 @@
       iconDomain: 'youtube.com',
       label: 'YouTube'
     }
+    // --- MICROSOFT ---
+    {
+      domain: 'microsoft.com',
+      prefix: 'mac', // Обычно отсюда приходят письма безопасности аккаунта
+      key: 'microsoft-account',
+      iconDomain: 'account.microsoft.com',
+      label: 'Microsoft Account'
+    },
+    {
+      domain: 'microsoft.com',
+      prefix: 'teams', // Уведомления из чатов
+      key: 'microsoft-teams',
+      iconDomain: 'teams.microsoft.com',
+      label: 'Microsoft Teams'
+    },
+    {
+      domain: 'microsoft.com',
+      includes: 'azure', // Azure DevOps, Billing и т.д.
+      key: 'microsoft-azure',
+      iconDomain: 'azure.microsoft.com',
+      label: 'Microsoft Azure'
+    },
+    {
+      domain: 'microsoft.com',
+      prefix: 'xbox',
+      key: 'microsoft-xbox',
+      iconDomain: 'xbox.com',
+      label: 'Xbox'
+    },
+    
+    // --- APPLE ---
+    {
+      domain: 'apple.com',
+      prefix: 'receipts', // Чеки из App Store
+      key: 'apple-store',
+      iconDomain: 'apps.apple.com',
+      label: 'App Store'
+    },
+    {
+      domain: 'apple.com',
+      prefix: 'no_reply', // Системные уведомления
+      key: 'apple',
+      iconDomain: 'apple.com',
+      label: 'Apple'
+    },
+    {
+      domain: 'email.apple.com', // Рассылки и новости
+      prefix: 'news',
+      key: 'apple-news',
+      iconDomain: 'apple.com',
+      label: 'Apple News'
+    },
+
+    // --- AMAZON ---
+    {
+      domain: 'amazon.com',
+      prefix: 'no-reply-aws',
+      key: 'amazon-aws',
+      iconDomain: 'aws.amazon.com',
+      label: 'Amazon Web Services'
+    },
+    {
+      domain: 'amazon.com',
+      prefix: 'auto-confirm', // Покупки
+      key: 'amazon',
+      iconDomain: 'amazon.com',
+      label: 'Amazon'
+    },
+
+    // --- ДЕВ-СЕРВИСЫ  ---
+    {
+      domain: 'github.com',
+      prefix: 'notifications',
+      key: 'github',
+      iconDomain: 'github.com',
+      label: 'GitHub'
+    },
+    {
+      domain: 'gitlab.com',
+      prefix: 'notify',
+      key: 'gitlab',
+      iconDomain: 'gitlab.com',
+      label: 'GitLab'
+    }
   ];
 
   // Отдельные проекты на поддоменах.
   // Для них НЕ схлопываем домен до yandex.ru, потому что это самостоятельные сервисы.
   const PROJECT_DOMAINS = {
+    'cloud.mail.ru': 'cloud.mail.ru',
+    'biz.mail.ru': 'biz.mail.ru', // VK WorkSpace
+    'pulse.mail.ru': 'pulse.mail.ru',
+    'vkplay.ru': 'vkplay.ru'
     'uslugi.yandex.ru': 'uslugi.yandex.ru',
     'webmaster.yandex.ru': 'webmaster.yandex.ru',
     'metrika.yandex.ru': 'metrika.yandex.ru',
@@ -315,7 +403,27 @@
   // Ключ: основной домен.
   // Значение: имя файла в /images.
   const LOCAL_IMAGES = {
+    // Microsoft
+    'microsoft-account': 'microsoft.png',
+    'microsoft-teams': 'microsoft-teams.png',
+    'microsoft-azure': 'microsoft-azure.png',
+    'microsoft-xbox': 'xbox.png',
+
+    // Apple
+    'apple': 'apple.png',
+    'apple-store': 'app-store.png',
+    'apple-news': 'apple.png',
+
+    // Amazon
+    'amazon': 'amazon.png',
+    'amazon-aws': 'aws.png',
+
+    // Dev
+    'github': 'github.png',
+    'gitlab': 'gitlab.png',
+
     'ite.events': 'ite.png',
+    
     'platformaofd.ru': 'platformaofd.png',
     'cloudpayments.ru': 'cloudpayments.png',
     'aliexpress.ru': 'aliexpress.png',
