@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           GSF (ИПИГ) - Иконки для писем в Gmail
 // @namespace      https://github.com/npekpacHo/gsf
-// @version        1.86.1
+// @version        1.86.2
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
 // @author         npekpacHo
 // @description    Добавляет иконки отправителей в Gmail.
@@ -474,7 +474,8 @@
     'github': 'github.png',
     'gitlab': 'gitlab.png',
 
-    'ite': 'ite.png',
+    'ite.group': 'ite.png',
+    'ite.events': 'ite.png',
 
     'ozon.ru': 'ozon.png',
     'wildberries.ru': 'wildberries.png',
@@ -543,6 +544,7 @@
   const LOCAL_IMAGE_FIRST_DOMAINS = new Set([
     ...Object.keys(PROJECT_DOMAINS),
     ...SERVICE_SENDERS.map(rule => rule.key)
+    'ite.group'
   ]);
 
   const DOMAIN_FIX_ENTRIES = Object.entries(DOMAIN_FIXES)
