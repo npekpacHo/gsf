@@ -3,7 +3,7 @@
 ![AdGuard](https://img.shields.io/badge/AdGuard-userscript-66b574)
 ![Tampermonkey](https://img.shields.io/badge/Tampermonkey-compatible-222222)
 ![Gmail](https://img.shields.io/badge/Gmail-web-D14836)
-![Version](https://img.shields.io/badge/version-1.84-blue)
+![Version](https://img.shields.io/badge/version-1.86-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 **GSF (ИПИГ)** «Иконки Писем в Гуглопочте» — userscript для веб-интерфейса Gmail. Добавляет маленькие иконки рядом с отправителями писем, чтобы список входящих был нагляднее и быстрее читался.
