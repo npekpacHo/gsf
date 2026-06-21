@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           GSF (ИПИГ) - Иконки для писем в Gmail
 // @namespace      https://github.com/npekpacHo/gsf
-// @version        1.85
+// @version        1.86
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
 // @author         npekpacHo
 // @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
@@ -228,25 +228,24 @@
       key: 'youtube',
       iconDomain: 'youtube.com',
       label: 'YouTube'
-    }
-    // --- MICROSOFT ---
+    },
     {
       domain: 'microsoft.com',
-      prefix: 'mac', // Обычно отсюда приходят письма безопасности аккаунта
+      prefix: 'mac',
       key: 'microsoft-account',
       iconDomain: 'account.microsoft.com',
       label: 'Microsoft Account'
     },
     {
       domain: 'microsoft.com',
-      prefix: 'teams', // Уведомления из чатов
+      prefix: 'teams',
       key: 'microsoft-teams',
       iconDomain: 'teams.microsoft.com',
       label: 'Microsoft Teams'
     },
     {
       domain: 'microsoft.com',
-      includes: 'azure', // Azure DevOps, Billing и т.д.
+      includes: 'azure',
       key: 'microsoft-azure',
       iconDomain: 'azure.microsoft.com',
       label: 'Microsoft Azure'
@@ -258,31 +257,27 @@
       iconDomain: 'xbox.com',
       label: 'Xbox'
     },
-    
-    // --- APPLE ---
     {
       domain: 'apple.com',
-      prefix: 'receipts', // Чеки из App Store
+      prefix: 'receipts',
       key: 'apple-store',
       iconDomain: 'apps.apple.com',
       label: 'App Store'
     },
     {
       domain: 'apple.com',
-      prefix: 'no_reply', // Системные уведомления
+      prefix: 'no_reply',
       key: 'apple',
       iconDomain: 'apple.com',
       label: 'Apple'
     },
     {
-      domain: 'email.apple.com', // Рассылки и новости
+      domain: 'email.apple.com',
       prefix: 'news',
       key: 'apple-news',
       iconDomain: 'apple.com',
       label: 'Apple News'
     },
-
-    // --- AMAZON ---
     {
       domain: 'amazon.com',
       prefix: 'no-reply-aws',
@@ -292,13 +287,11 @@
     },
     {
       domain: 'amazon.com',
-      prefix: 'auto-confirm', // Покупки
+      prefix: 'auto-confirm',
       key: 'amazon',
       iconDomain: 'amazon.com',
       label: 'Amazon'
     },
-
-    // --- ДЕВ-СЕРВИСЫ  ---
     {
       domain: 'github.com',
       prefix: 'notifications',
@@ -312,6 +305,67 @@
       key: 'gitlab',
       iconDomain: 'gitlab.com',
       label: 'GitLab'
+    },
+    {
+      domain: 'linkedin.com',
+      includes: 'noreply',
+      key: 'linkedin',
+      iconDomain: 'linkedin.com',
+      label: 'LinkedIn'
+    },
+    {
+      domain: 'slack.com',
+      prefix: 'feedback',
+      key: 'slack',
+      iconDomain: 'slack.com',
+      label: 'Slack'
+    },
+    {
+      domain: 'figma.com',
+      prefix: 'no-reply',
+      key: 'figma',
+      iconDomain: 'figma.com',
+      label: 'Figma'
+    },
+    {
+      domain: 'mail.notion.so',
+      key: 'notion',
+      iconDomain: 'notion.so',
+      label: 'Notion'
+    },
+    {
+      domain: 'steampowered.com',
+      prefix: 'noreply',
+      key: 'steam',
+      iconDomain: 'store.steampowered.com',
+      label: 'Steam'
+    },
+    {
+      domain: 'netflix.com',
+      prefix: 'info',
+      key: 'netflix',
+      iconDomain: 'netflix.com',
+      label: 'Netflix'
+    },
+    {
+      domain: 'spotify.com',
+      prefix: 'no-reply',
+      key: 'spotify',
+      iconDomain: 'spotify.com',
+      label: 'Spotify'
+    },
+    {
+      domain: 'cloudflare.com',
+      prefix: 'noreply',
+      key: 'cloudflare',
+      iconDomain: 'cloudflare.com',
+      label: 'Cloudflare'
+    },
+    {
+      domain: 'vercel.com',
+      key: 'vercel',
+      iconDomain: 'vercel.com',
+      label: 'Vercel'
     }
   ];
 
@@ -403,26 +457,45 @@
   // Ключ: основной домен.
   // Значение: имя файла в /images.
   const LOCAL_IMAGES = {
-    // Microsoft
     'microsoft-account': 'microsoft.png',
     'microsoft-teams': 'microsoft-teams.png',
     'microsoft-azure': 'microsoft-azure.png',
     'microsoft-xbox': 'xbox.png',
 
-    // Apple
     'apple': 'apple.png',
     'apple-store': 'app-store.png',
     'apple-news': 'apple.png',
 
-    // Amazon
     'amazon': 'amazon.png',
     'amazon-aws': 'aws.png',
 
-    // Dev
     'github': 'github.png',
     'gitlab': 'gitlab.png',
 
     'ite.events': 'ite.png',
+
+    'ozon.ru': 'ozon.png',
+    'wildberries.ru': 'wildberries.png',
+    'gosuslugi.ru': 'gosuslugi.png',
+    'sberbank.ru': 'sberbank.png',
+    'tinkoff.ru': 'tinkoff.png',
+    'vk.com': 'vk.png',
+    'dom.ru': 'dom-ru.png',
+    'dns-shop.ru': 'dns.png',
+    
+    'linkedin': 'linkedin.png',
+    'slack': 'slack.png',
+    'figma': 'figma.png',
+    'notion': 'notion.png',
+
+    'steam': 'steam.png',
+    'netflix': 'netflix.png',
+    'spotify': 'spotify.png',
+    'ea.com': 'ea.png',
+
+    'cloudflare': 'cloudflare.png',
+    'vercel': 'vercel.png',
+    'termius.com': 'termius.png',
     
     'platformaofd.ru': 'platformaofd.png',
     'cloudpayments.ru': 'cloudpayments.png',
