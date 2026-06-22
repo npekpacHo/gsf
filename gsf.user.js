@@ -475,6 +475,9 @@
     'github': 'github.png',
     'gitlab': 'gitlab.png',
 
+    'systeme.ru': 'systeme.png',
+    'systeme-electric.ru': 'systeme.png',
+
     'ite.group': 'ite.png',
     'ite.events': 'ite.png',
 
