@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           GSF (ИПИГ) - Иконки для писем в Gmail
 // @namespace      https://github.com/npekpacHo/gsf
-// @version        1.86.2
+// @version        1.86.3
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
 // @author         npekpacHo
 // @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
@@ -399,7 +399,9 @@
   // Слева: домен отправителя или его часть.
   // Справа: основной домен, favicon которого надо показывать.
   const DOMAIN_FIXES = {
+    'systeme-electric.ru': 'systeme.ru',
     'ite.events': 'ite.group',
+    
     'ozon.ru': 'ozon.ru',
     'mailer.ozon.ru': 'ozon.ru',
 
