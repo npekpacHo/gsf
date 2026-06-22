@@ -373,7 +373,7 @@
   // Для них НЕ схлопываем домен до yandex.ru, потому что это самостоятельные сервисы.
   const PROJECT_DOMAINS = {
     'cloud.mail.ru': 'cloud.mail.ru',
-    'biz.mail.ru': 'biz.mail.ru', // VK WorkSpace
+    'biz.mail.ru': 'biz.mail.ru',
     'pulse.mail.ru': 'pulse.mail.ru',
     'vkplay.ru': 'vkplay.ru',
     'uslugi.yandex.ru': 'uslugi.yandex.ru',
