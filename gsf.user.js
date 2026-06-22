@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           GSF (ИПИГ) - Иконки для писем в Gmail
 // @namespace      https://github.com/npekpacHo/gsf
-// @version        1.86.4
+// @version        1.86.5
 // @icon           https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico
 // @author         npekpacHo
 // @description    Добавляет иконки отправителей в Gmail. Оптимизировано для AdGuard.
@@ -439,7 +439,7 @@
     'zarplata.ru': 'zarplata.ru',
     'rgs.ru': 'rgs.ru',
     'promopult.ru': 'promopult.ru',
-    'systeme-electric.ru': 'systeme-electric.ru',
+    'systeme-electric.ru': 'systeme.ru',
     'hik-partner.com': 'hik-partner.com',
     'vivino.com': 'vivino.com',
     'termius.com': 'termius.com',
@@ -475,12 +475,11 @@
     'github': 'github.png',
     'gitlab': 'gitlab.png',
 
-    'systeme': 'systeme.png',
-    'systeme.ru': 'systeme.png',
-    'systeme-electric.ru': 'systeme.png',
-
     'ite.group': 'ite.png',
     'ite.events': 'ite.png',
+
+    'systeme.ru': 'systeme.png',
+    'systeme-electric.ru': 'systeme.png',
 
     'ozon.ru': 'ozon.png',
     'wildberries.ru': 'wildberries.png',
