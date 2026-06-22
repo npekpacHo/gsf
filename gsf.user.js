@@ -548,7 +548,8 @@
   const LOCAL_IMAGE_FIRST_DOMAINS = new Set([
     ...Object.keys(PROJECT_DOMAINS),
     ...SERVICE_SENDERS.map(rule => rule.key),
-    'ite.group'
+    'ite.group',
+    'systeme.ru'
   ]);
 
   const DOMAIN_FIX_ENTRIES = Object.entries(DOMAIN_FIXES)
